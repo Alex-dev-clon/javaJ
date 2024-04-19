@@ -37,8 +37,7 @@ public class Homework {
 
         System.out.println("\nРаспределение работников по департаментам");
         for (var entry : groupByDepartment(persons).entrySet()) {
-            System.out.print(entry.getKey().getName() + ": ");
-            System.out.println(entry.getValue().size());
+            System.out.println(entry.getKey().getName() + ": " + entry.getValue().size());
         }
 
         System.out.println("\nМаксимальные зарплаты работников по департаментам");
@@ -53,8 +52,9 @@ public class Homework {
             System.out.println(entry.getValue());
         }
 
-        System.out.println("\nРаботников с минимальной зарплатой в каждом департаменте");
-        minSalaryPersons(persons).forEach(System.out::println);
+        System.out.println("\nРаботники с минимальной зарплатой в каждом департаменте");
+        minSalaryPersons(persons)
+                .forEach(p -> System.out.println(p.getDepartment().getName() + ": " + p));
     }
 
     /**
@@ -94,8 +94,9 @@ public class Homework {
      * Найти максимальные зарплаты по отделам
      */
     static Map<Department, Double> maxSalaryByDepartment(List<Person> persons) {
-        return persons.stream()
-                .collect(Collectors.toMap(Person::getDepartment,
+        return persons.parallelStream()
+                .collect(Collectors.toMap(
+                        Person::getDepartment,
                         Person::getSalary,
                         Double::max));
     }
@@ -105,9 +106,11 @@ public class Homework {
      */
     static Map<Department, List<String>> groupPersonNamesByDepartment(List<Person> persons) {
         return persons.stream()
-                .collect(Collectors.groupingBy(Person::getDepartment,
-                        Collectors.mapping(Person::getName,
-                                Collectors.toList())));
+                .collect(
+                        Collectors.groupingBy(Person::getDepartment,
+                                Collectors.mapping(
+                                        Person::getName,
+                                        Collectors.toList())));
     }
 
     /**

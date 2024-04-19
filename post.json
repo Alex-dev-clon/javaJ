@@ -1,0 +1,11 @@
+{
+  "id" : 2,
+  "createdDate" : 1713434300278,
+  "content" : "I learned java!",
+  "likes" : 22,
+  "comments" : [ "Well done!", "Great job!" ],
+  "person" : {
+    "name" : "Anna",
+    "age" : 30
+  }
+}
