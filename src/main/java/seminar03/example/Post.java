@@ -1,8 +1,7 @@
-package seminar03;
+package seminar03.example;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -29,11 +28,6 @@ public class Post implements Serializable {
         this.comments = comments;
         this.person = person;
     }
-
-//    @JsonProperty("createdDate")
-//    public String getReadableCreatedDate() {
-//        return (new SimpleDateFormat("dd-MM-yyyy")).format(createdDate);
-//    }
 
     public int getId() {
         return id;
@@ -85,7 +79,7 @@ public class Post implements Serializable {
 
     @Override
     public String toString() {
-         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
         return "Post{" +
                 "id=" + id +
                 ", createdDate=" + format.format(createdDate) +

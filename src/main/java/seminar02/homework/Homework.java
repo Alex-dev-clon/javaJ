@@ -50,7 +50,6 @@ public class Homework {
         System.out.println(testClass.offsetDate3 + " -> с 19.04.2024 до конца 2024 года");
         System.out.println(testClass.offsetDate4 + " -> с 01.01.1970 до 01.01.2000");
         System.out.println("______________".repeat(10));
-
     }
 
     private static class TestClass {
@@ -131,5 +130,13 @@ public class Homework {
 
         @RandomDate(min = 0L, max = 946674000000L) // с 01.01.1970 до 01.01.2000
         private OffsetDateTime offsetDate4;
+
+        // Некорректное применение аннотаций к полям других типов данных, отличных от дат
+        @RandomDate
+        private String string;
+
+        @RandomDate(min = 946674000000L, max = 978210000000L) // 01.01.2000 - 31.21.2000
+        private LocalTime time;
+
     }
 }

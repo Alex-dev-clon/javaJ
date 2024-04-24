@@ -1,4 +1,4 @@
-package seminar03;
+package seminar03.example;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,5 +43,8 @@ public class Main {
             System.out.println(e.getMessage());;
         }
         System.out.println(deserializedPost);
+
+        Person jack = new Person("Jack", 77);
+        System.out.println(jack);
     }
 }
