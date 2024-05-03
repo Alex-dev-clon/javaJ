@@ -130,13 +130,13 @@ public class HomeworkJDBC {
     static void insertDataStudents(Connection connection) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             int count = statement.executeUpdate(String.format("""
-                            INSERT INTO `DB_students`.`students` (`id`,`first_name`, `last_name`, `group_id`) 
-                            VALUES
-                                (UUID(), 'Oleg', 'Ivanov', '%s'),
-                                (UUID(), 'Mark', 'Popov', '%s'),
-                                (UUID(), 'Nickolay', 'Denisov', '%s'),
-                                (UUID(), 'Mikhail', 'Petrov', '%s');
-                            """,
+                    INSERT INTO `DB_students`.`students` (`id`,`first_name`, `last_name`, `group_id`) 
+                    VALUES
+                        (UUID(), 'Oleg', 'Ivanov', '%s'),
+                        (UUID(), 'Mark', 'Popov', '%s'),
+                        (UUID(), 'Nickolay', 'Denisov', '%s'),
+                        (UUID(), 'Mikhail', 'Petrov', '%s');
+                    """,
                     getGroupUUID(connection, "'Developers'"),
                     getGroupUUID(connection, "'Analysts'"),
                     getGroupUUID(connection, "'Testers'"),
