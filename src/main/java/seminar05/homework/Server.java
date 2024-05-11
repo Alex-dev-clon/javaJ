@@ -1,11 +1,12 @@
-package seminar05.lecture;
+package seminar05.homework;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server {
-    private ServerSocket serverSocket;
+    private static final int SERVER_PORT = 1300;
+    private final ServerSocket serverSocket;
 
     public Server(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
@@ -15,8 +16,8 @@ public class Server {
         try {
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
-                System.out.println("New client has connected!");
                 ClientManager client = new ClientManager(socket);
+                System.out.println("New client " + client.getName() + " has connected!");
                 Thread thread = new Thread(client);
                 thread.start();
             }
@@ -38,7 +39,7 @@ public class Server {
     public static void main(String[] args) {
         ServerSocket serverSocket = null;
         try {
-            serverSocket = new ServerSocket(1300);
+            serverSocket = new ServerSocket(SERVER_PORT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

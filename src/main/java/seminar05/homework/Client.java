@@ -1,14 +1,20 @@
-package seminar05.lecture;
+package seminar05.homework;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Client {
-    private Socket socket;
+    private static final String HOST = "localhost";
+    private static final int CLIENT_PORT = 1300;
+    private final Socket socket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
-    private String name;
+    private final String name;
+    // переменная флаговая для завершения второго потока
+    private volatile boolean isClosed;
 
     public Client(Socket socket, String name) {
         this.socket = socket;
@@ -19,6 +25,7 @@ public class Client {
         } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
+        isClosed = false;
     }
 
     public void sendMessage() {
@@ -28,15 +35,26 @@ public class Client {
             bufferedWriter.flush();
 
             Scanner scanner = new Scanner(System.in);
-            while (socket.isConnected()) {
+            while (!isClosed) {
                 String message = scanner.nextLine();
+
+                // В случае, если клиент желает покинуть чат при помощи команды "exit"
+                if (Objects.equals(message.toLowerCase(), "exit")) {
+                    isClosed = true;
+                    bufferedWriter.write("exit");
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+                    break;
+                }
                 bufferedWriter.write(name + ": " + message);
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
             }
+            scanner.close();
         } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
+        closeEverything(socket, bufferedReader, bufferedWriter);
     }
 
     private void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
@@ -58,7 +76,7 @@ public class Client {
     public void listenForMessage() {
         new Thread(() -> {
             String messageFromGroup;
-            while (socket.isConnected()) {
+            while (!isClosed) {
                 try {
                     messageFromGroup = bufferedReader.readLine();
                     System.out.println(messageFromGroup);
@@ -73,14 +91,19 @@ public class Client {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter your name, please.");
         String name = scanner.nextLine();
-        Socket socket = null;
-        try {
-            socket = new Socket("localhost", 1300);
+        try (Socket socket = new Socket(HOST, CLIENT_PORT)) {
+            Client client = new Client(socket, name);
+            InetAddress inetAddress = socket.getInetAddress();
+            System.out.println("InetAddress: " + inetAddress);
+            String remoteIp = inetAddress.getHostAddress();
+            System.out.println("Remote IP: " + remoteIp);
+            System.out.println("Local port: " + socket.getLocalPort());
+
+            client.listenForMessage();
+            client.sendMessage();
+            client.closeEverything(socket, client.bufferedReader, client.bufferedWriter);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
-        Client client = new Client(socket, name);
-        client.listenForMessage();
-        client.sendMessage();
     }
 }

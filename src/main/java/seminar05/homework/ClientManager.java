@@ -1,19 +1,21 @@
-package seminar05.lecture;
+package seminar05.homework;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class ClientManager implements Runnable {
-    private Socket socket;
+    private final Socket socket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private String name;
-    public static ArrayList<ClientManager> clients = new ArrayList<>();
+    public static List<ClientManager> clients = new ArrayList<>();
 
     public ClientManager(Socket socket) {
+        this.socket = socket;
         try {
-            this.socket = socket;
             bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             name = bufferedReader.readLine();
@@ -28,10 +30,28 @@ public class ClientManager implements Runnable {
     public void run() {
         String messageFromClient;
 
-        while (socket.isConnected()) {
+        while (!socket.isClosed()) {
             try {
                 messageFromClient = bufferedReader.readLine();
-                broadcastMessage(messageFromClient);
+
+                // В случае, если клиент желает покинуть чат при помощи команды "exit"
+                if (Objects.equals(messageFromClient, "exit")) {
+                    System.out.println("Client " + name + " is disconnected and left chat!");
+                    broadcastMessage("Client " + name + " is disconnected and left chat!");
+                    closeEverything(socket, bufferedReader, bufferedWriter);
+                    break;
+
+                    // Персональное сообщение участнику чата
+                } else if (messageFromClient.startsWith(name + ": @")) {
+                    String[] split = messageFromClient.split("\\s+");
+                    String loginTo = split[1].substring(1);
+                    String pureMessage = messageFromClient.replace(name + ": @" + loginTo + " ", "");
+                    privateMessage(pureMessage, loginTo);
+
+                    // Сообщение всем участникам чата
+                } else {
+                    broadcastMessage(messageFromClient);
+                }
             } catch (IOException e) {
                 closeEverything(socket, bufferedReader, bufferedWriter);
                 break;
@@ -42,8 +62,24 @@ public class ClientManager implements Runnable {
     private void broadcastMessage(String messageToSend) {
         for (ClientManager client : clients) {
             try {
+
+                // Отправляем сообщение всем участникам чата, кроме себя
                 if (!client.name.equals(name)) {
                     client.bufferedWriter.write(messageToSend);
+                    client.bufferedWriter.newLine();
+                    client.bufferedWriter.flush();
+                }
+            } catch (IOException e) {
+                closeEverything(socket, bufferedReader, bufferedWriter);
+            }
+        }
+    }
+
+    private void privateMessage(String messageToSend, String loginTo) {
+        for (ClientManager client : clients) {
+            try {
+                if (client.name.equals(loginTo)) {
+                    client.bufferedWriter.write(name + ": " + messageToSend);
                     client.bufferedWriter.newLine();
                     client.bufferedWriter.flush();
                 }
@@ -72,6 +108,11 @@ public class ClientManager implements Runnable {
 
     public void removeClient() {
         clients.remove(this);
+        System.out.println(name + " left chat.");
         broadcastMessage("SERVER: " + name + " left chat.");
+    }
+
+    public String getName() {
+        return name;
     }
 }
